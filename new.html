@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trắc Nghiệm KTCT Mác–Lênin</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e1117;
+    --surface: #161b27;
+    --surface2: #1e2535;
+    --border: #2a3347;
+    --accent: #4f8ef7;
+    --accent2: #64dfb4;
+    --accent3: #f7934f;
+    --text: #e8edf5;
+    --muted: #7a8aa0;
+    --correct: #2ecc71;
+    --wrong: #e74c3c;
+    --ch1: #4f8ef7;
+    --ch2: #64dfb4;
+    --ch3: #f7934f;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Be Vietnam Pro', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+  .logo span { color: var(--accent2); }
+  .header-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .progress-bar-outer {
+    width: 120px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-bar-inner {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 99px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+  #score-display {
+    font-size: 13px;
+    color: var(--muted);
+    min-width: 60px;
+    text-align: right;
+  }
+
+  /* ── MAIN ── */
+  main {
+    flex: 1;
+    max-width: 820px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+
+  /* ── HOME SCREEN ── */
+  #home-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 32px;
+    padding-top: 40px;
+  }
+  .home-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 42px;
+    line-height: 1.15;
+    color: var(--text);
+  }
+  .home-title em {
+    font-style: normal;
+    color: var(--accent);
+  }
+  .home-subtitle {
+    font-size: 15px;
+    color: var(--muted);
+    max-width: 480px;
+    line-height: 1.7;
+  }
+  .mode-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    width: 100%;
+    max-width: 560px;
+  }
+  .mode-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+  }
+  .mode-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+  .mode-card.ch1::before { background: var(--ch1); }
+  .mode-card.ch2::before { background: var(--ch2); }
+  .mode-card.ch3::before { background: var(--ch3); }
+  .mode-card.all::before { background: linear-gradient(90deg, var(--ch1), var(--ch2), var(--ch3)); }
+  .mode-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+  .mode-icon { font-size: 24px; margin-bottom: 10px; }
+  .mode-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .mode-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .mode-count {
+    margin-top: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .mode-card.ch1 .mode-count { color: var(--ch1); }
+  .mode-card.ch2 .mode-count { color: var(--ch2); }
+  .mode-card.ch3 .mode-count { color: var(--ch3); }
+  .mode-card.all .mode-count { color: var(--accent2); }
+
+  /* ── QUIZ SCREEN ── */
+  #quiz-screen { display: none; }
+  .quiz-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  .chap-badge {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 99px;
+  }
+  .badge-ch1 { background: rgba(79,142,247,0.15); color: var(--ch1); border: 1px solid rgba(79,142,247,0.3); }
+  .badge-ch2 { background: rgba(100,223,180,0.15); color: var(--ch2); border: 1px solid rgba(100,223,180,0.3); }
+  .badge-ch3 { background: rgba(247,147,79,0.15); color: var(--ch3); border: 1px solid rgba(247,147,79,0.3); }
+  .q-counter { font-size: 13px; color: var(--muted); margin-left: auto; }
+
+  .question-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+    margin-bottom: 20px;
+    animation: fadeSlide 0.3s ease;
+  }
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .question-text {
+    font-size: 17px;
+    line-height: 1.7;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 24px;
+  }
+  .option-btn {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    cursor: pointer;
+    transition: all 0.18s;
+    text-align: left;
+    width: 100%;
+    color: var(--text);
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .option-btn:hover:not(:disabled) {
+    border-color: var(--accent);
+    background: rgba(79,142,247,0.08);
+  }
+  .option-key {
+    font-size: 12px;
+    font-weight: 700;
+    min-width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--border);
+    color: var(--muted);
+    flex-shrink: 0;
+    margin-top: 1px;
+    transition: all 0.18s;
+  }
+  .option-btn:hover:not(:disabled) .option-key {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  /* answer states */
+  .option-btn.correct {
+    border-color: var(--correct);
+    background: rgba(46,204,113,0.1);
+  }
+  .option-btn.correct .option-key {
+    background: var(--correct);
+    color: #fff;
+  }
+  .option-btn.wrong {
+    border-color: var(--wrong);
+    background: rgba(231,76,60,0.1);
+  }
+  .option-btn.wrong .option-key {
+    background: var(--wrong);
+    color: #fff;
+  }
+  .option-btn:disabled { cursor: default; }
+
+  /* feedback */
+  .feedback {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 500;
+    margin-top: 8px;
+  }
+  .feedback.show { display: flex; }
+  .feedback.correct { background: rgba(46,204,113,0.12); color: var(--correct); border: 1px solid rgba(46,204,113,0.3); }
+  .feedback.wrong { background: rgba(231,76,60,0.12); color: #ff7a7a; border: 1px solid rgba(231,76,60,0.3); }
+  .feedback-icon { font-size: 18px; }
+
+  .quiz-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+  }
+  .btn {
+    padding: 12px 24px;
+    border-radius: var(--radius);
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.18s;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    flex: 1;
+  }
+  .btn-primary:hover { background: #3a7de8; }
+  .btn-secondary {
+    background: var(--surface2);
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { color: var(--text); border-color: var(--muted); }
+  .btn:disabled { opacity: 0.4; cursor: default; }
+
+  /* ── RESULT SCREEN ── */
+  #result-screen { display: none; text-align: center; padding-top: 40px; }
+  .result-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: conic-gradient(var(--accent2) 0%, var(--border) 0%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 28px;
+    position: relative;
+  }
+  .result-circle-inner {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .result-pct {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--accent2);
+    line-height: 1;
+  }
+  .result-label { font-size: 11px; color: var(--muted); }
+  .result-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 30px;
+    margin-bottom: 8px;
+  }
+  .result-sub { font-size: 14px; color: var(--muted); margin-bottom: 32px; }
+  .result-stats {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    margin-bottom: 36px;
+  }
+  .stat-item { text-align: center; }
+  .stat-num { font-size: 28px; font-weight: 700; }
+  .stat-num.green { color: var(--correct); }
+  .stat-num.red { color: var(--wrong); }
+  .stat-lbl { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .result-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .result-actions .btn { min-width: 160px; }
+
+  /* ── REVIEW ── */
+  #review-screen { display: none; }
+  .review-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .review-title { font-size: 20px; font-weight: 700; }
+  .review-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 12px;
+    border-left: 4px solid var(--border);
+  }
+  .review-item.review-correct { border-left-color: var(--correct); }
+  .review-item.review-wrong { border-left-color: var(--wrong); }
+  .review-q { font-size: 14px; font-weight: 500; margin-bottom: 12px; line-height: 1.6; }
+  .review-options { display: flex; flex-direction: column; gap: 6px; }
+  .review-option {
+    font-size: 13px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    color: var(--muted);
+  }
+  .review-option.is-correct { background: rgba(46,204,113,0.12); color: var(--correct); font-weight: 600; }
+  .review-option.is-wrong-pick { background: rgba(231,76,60,0.1); color: #ff7a7a; }
+
+  /* ── UTIL ── */
+  .hidden { display: none !important; }
+  @media (max-width: 520px) {
+    .mode-grid { grid-template-columns: 1fr 1fr; }
+    .home-title { font-size: 28px; }
+    header { padding: 14px 16px; }
+    main { padding: 20px 14px 60px; }
+    .question-card { padding: 20px; }
+    .progress-wrap { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">KTCT <span>Mác–Lênin</span></div>
+  <div class="header-right">
+    <div class="progress-wrap" id="progress-wrap" style="display:none">
+      <div class="progress-bar-outer">
+        <div class="progress-bar-inner" id="progress-bar"></div>
+      </div>
+      <span id="progress-text"></span>
+    </div>
+    <div id="score-display"></div>
+  </div>
+</header>
+
+<main>
+
+  <!-- HOME -->
+  <div id="home-screen">
+    <div>
+      <div class="home-title">Trắc nghiệm<br><em>Kinh tế Chính trị</em></div>
+    </div>
+    <p class="home-subtitle">Ôn tập theo chương hoặc làm ngẫu nhiên toàn bộ Chương 1, 2 và 3. Chọn chế độ để bắt đầu.</p>
+    <div class="mode-grid">
+      <div class="mode-card ch1" onclick="startQuiz('ch1')">
+        <div class="mode-icon">📖</div>
+        <div class="mode-title">Chương 1</div>
+        <div class="mode-desc">Đối tượng, phương pháp nghiên cứu và chức năng của KTCT Mác–Lênin</div>
+        <div class="mode-count">21 câu hỏi</div>
+      </div>
+      <div class="mode-card ch2" onclick="startQuiz('ch2')">
+        <div class="mode-icon">🏪</div>
+        <div class="mode-title">Chương 2</div>
+        <div class="mode-desc">Hàng hóa, thị trường và vai trò của các chủ thể tham gia thị trường</div>
+        <div class="mode-count">47 câu hỏi</div>
+      </div>
+      <div class="mode-card ch3" onclick="startQuiz('ch3')">
+        <div class="mode-icon">💰</div>
+        <div class="mode-title">Chương 3</div>
+        <div class="mode-desc">Giá trị thặng dư trong nền kinh tế thị trường tư bản chủ nghĩa</div>
+        <div class="mode-count">16 câu hỏi</div>
+      </div>
+      <div class="mode-card all" onclick="startQuiz('all')">
+        <div class="mode-icon">🎲</div>
+        <div class="mode-title">Ngẫu nhiên</div>
+        <div class="mode-desc">Trộn tất cả câu hỏi từ Chương 1, 2 và 3 theo thứ tự ngẫu nhiên</div>
+        <div class="mode-count">84 câu hỏi</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="quiz-screen">
+    <div class="quiz-meta">
+      <span class="chap-badge" id="chap-badge"></span>
+      <span class="q-counter" id="q-counter"></span>
+    </div>
+    <div class="question-card">
+      <div class="question-text" id="question-text"></div>
+      <div class="options-list" id="options-list"></div>
+      <div class="feedback" id="feedback">
+        <span class="feedback-icon" id="fb-icon"></span>
+        <span id="fb-text"></span>
+      </div>
+    </div>
+    <div class="quiz-actions">
+      <button class="btn btn-secondary" onclick="goHome()">⟵ Trang chủ</button>
+      <button class="btn btn-primary" id="next-btn" onclick="nextQuestion()" disabled>Câu tiếp theo →</button>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="result-screen">
+    <div class="result-circle" id="result-circle">
+      <div class="result-circle-inner">
+        <div class="result-pct" id="result-pct">0%</div>
+        <div class="result-label">Điểm</div>
+      </div>
+    </div>
+    <div class="result-title" id="result-title"></div>
+    <div class="result-sub" id="result-sub"></div>
+    <div class="result-stats">
+      <div class="stat-item"><div class="stat-num green" id="stat-correct">0</div><div class="stat-lbl">Đúng</div></div>
+      <div class="stat-item"><div class="stat-num red" id="stat-wrong">0</div><div class="stat-lbl">Sai</div></div>
+      <div class="stat-item"><div class="stat-num" id="stat-total">0</div><div class="stat-lbl">Tổng</div></div>
+    </div>
+    <div class="result-actions">
+      <button class="btn btn-secondary" onclick="showReview()">📋 Xem đáp án</button>
+      <button class="btn btn-primary" onclick="goHome()">🏠 Trang chủ</button>
+    </div>
+  </div>
+
+  <!-- REVIEW -->
+  <div id="review-screen">
+    <div class="review-header">
+      <button class="btn btn-secondary" onclick="showResult()">← Quay lại</button>
+      <div class="review-title">Xem lại đáp án</div>
+    </div>
+    <div id="review-list"></div>
+  </div>
+
+</main>
+
+<script>
+const ALL_QUESTIONS = [
+  // ── CHƯƠNG 1 ──
+  {ch:1, q:"Chủ nghĩa trọng thương ra đời và phát triển từ:", opts:["Thế kỷ XIV-XVII","Thế kỷ XV-XVII","Thế kỷ XVI-XVII","Thế kỷ XV-XVIII"], ans:1},
+  {ch:1, q:"Chủ nghĩa trọng nông ra đời và phát triển từ:", opts:["Thế kỷ XV-XVII","Từ thế kỷ XV đến nửa đầu thế kỷ XVIII","Từ giữa thế kỷ XVII đến nửa đầu thế kỷ XVIII","Từ giữa thế kỷ XVII đến cuối thế kỷ XVIII"], ans:2},
+  {ch:1, q:"Một trong những đặc điểm cơ bản của chủ nghĩa trọng thương:", opts:["Tiền tệ (tiền giấy) là tiêu chuẩn của của cải","Tiền tệ (vàng, bạc) là tiêu chuẩn của của cải","Thương nghiệp là tiêu chuẩn của của cải","Đất đai là tiêu chuẩn của của cải"], ans:1},
+  {ch:1, q:"Đối tượng nghiên cứu của chủ nghĩa trọng thương:", opts:["Lĩnh vực lưu thông","Lĩnh vực sản xuất","Lĩnh vực sản xuất nông nghiệp","Nguồn gốc của của cải và sự giàu có của các dân tộc"], ans:0},
+  {ch:1, q:"Đối tượng nghiên cứu của chủ nghĩa trọng nông:", opts:["Lĩnh vực lưu thông","Lĩnh vực sản xuất và lưu thông","Lĩnh vực sản xuất nông nghiệp","Nguồn gốc của của cải và sự giàu có của các dân tộc"], ans:2},
+  {ch:1, q:"Đối tượng nghiên cứu của kinh tế chính trị tư sản cổ điển Anh:", opts:["Lĩnh vực lưu thông","Lĩnh vực sản xuất","Lĩnh vực sản xuất nông nghiệp","Nguồn gốc của của cải và sự giàu có của các dân tộc"], ans:3},
+  {ch:1, q:"Đối tượng nghiên cứu của kinh tế chính trị Mác – Lênin:", opts:["Lĩnh vực lưu thông (đặc biệt là ngoại thương)","Các quan hệ xã hội của sản xuất và trao đổi","Lĩnh vực sản xuất nông nghiệp","Nguồn gốc của của cải và sự giàu có của các dân tộc"], ans:1},
+  {ch:1, q:"Ai là người cho rằng giá trị hàng hóa có nguồn gốc từ lao động?", opts:["William Petty","Adam Smith","David Ricardo","Tất cả các phương án đều đúng"], ans:3},
+  {ch:1, q:"Ai được coi là cha đẻ của kinh tế thị trường tự do?", opts:["William Petty","Adam Smith","David Ricardo","Tất cả các phương án đều đúng"], ans:1},
+  {ch:1, q:"Ai là người đã đưa ra \"Chính sách kinh tế mới\"?", opts:["William Petty","C. Mác","V.I. Lênin","P.A. Samuelson"], ans:2},
+  {ch:1, q:"Kinh tế chính trị có mấy chức năng cơ bản?", opts:["2","3","4","5"], ans:2},
+  {ch:1, q:"Một trong những quan điểm cơ bản của các học thuyết kinh tế tư sản cổ điển là?", opts:["Nhà nước nên can thiệp sâu vào kinh tế","Nhà nước nên can thiệp sâu vào an ninh, quốc phòng","Nhà nước không nên can thiệp sâu vào kinh tế","Nhà nước không nên can thiệp sâu vào lưu thông"], ans:2},
+  {ch:1, q:"Kinh tế chính trị chính thức trở thành môn khoa học ở hệ thống lý luận của:", opts:["W. Petty","D. Ricardo","A. Smith","R. T. Malthus"], ans:2},
+  {ch:1, q:"Tác giả phát triển kinh tế chính trị Mác – Lênin thế kỉ XX là ai?", opts:["D. Ricardo","J.M. Keynes","V. Lênin","P. A. Samuelson"], ans:2},
+  {ch:1, q:"Tác phẩm thể hiện tập trung lý luận kinh tế của C. Mác – P. Ăngghen là:", opts:["Nguồn gốc của cải của các dân tộc","Tuyên ngôn của Đảng cộng sản","Bộ tư bản","Tình cảnh giai cấp công nhân Anh"], ans:2},
+  {ch:1, q:"Phương pháp đặc thù trong nghiên cứu kinh tế chính trị là:", opts:["Phân tích tổng hợp","Mô hình hóa","Trừu tượng hóa khoa học","Điều tra thống kê"], ans:2},
+  {ch:1, q:"Kinh tế chính trị Mác–Lênin đã kế thừa và phát triển trực tiếp những thành tựu của:", opts:["Chủ nghĩa trọng nông","Kinh tế chính trị cổ điển Anh","Chủ nghĩa trọng thương","Kinh tế chính trị tầm thường"], ans:1},
+  {ch:1, q:"Chức năng thực tiễn của kinh tế chính trị Mác–Lênin đối với sinh viên là:", opts:["Phát hiện bản chất của các hiện tượng và quá trình kinh tế","Cơ sở để nhận thức được các quy luật và tính quy luật trong kinh tế","Cơ sở khoa học lý luận để nhận diện và định vị vai trò, trách nhiệm và sáng tạo","Trang bị phương pháp để xem xét thế giới nói chung"], ans:2},
+  {ch:1, q:"Đối tượng nghiên cứu của kinh tế chính trị Mác–Lênin là:", opts:["Sản xuất của cải vật chất","Quan hệ của sản xuất và trao đổi trong phương thức sản xuất mà các quan hệ đó hình thành và phát triển","Quan hệ xã hội giữa người với người","Quá trình sản xuất, phân phối, trao đổi, tiêu dùng"], ans:1},
+  {ch:1, q:"Đặc điểm của phương pháp trừu tượng hóa khoa học trong nghiên cứu kinh tế chính trị là:", opts:["Tìm được bản chất của đối tượng nghiên cứu","Tìm được nội dung của đối tượng nghiên cứu","Tìm được hình thức của đối tượng nghiên cứu","Nắm được ý nghĩa của đối tượng nghiên cứu"], ans:0},
+  {ch:1, q:"Chức năng phương pháp luận của kinh tế chính trị Mác–Lênin:", opts:["Trang bị phương pháp để xem xét thế giới nói chung","Là cơ sở để nhận thức được các quy luật và tính quy luật trong kinh tế","Là nền tảng lý luận khoa học cho việc tiếp cận các khoa học kinh tế khác","Tất cả các phương án đều đúng"], ans:3},
+
+  // ── CHƯƠNG 2 ──
+  {ch:2, q:"Giá trị của hàng hóa được xác định bởi yếu tố nào sau đây?", opts:["Lao động trừu tượng của người sản xuất hàng hóa kết tinh trong hàng hóa ấy","Sự khan hiếm của hàng hóa","Sự hao phí sức lao động của con người nói chung","Công dụng hàng hóa"], ans:0},
+  {ch:2, q:"Giá trị hàng hóa được tạo ra từ khâu nào?", opts:["Từ phân phối hàng hóa","Từ sản xuất hàng hóa","Từ trao đổi hàng hóa","Cả sản xuất, phân phối và trao đổi hàng hóa"], ans:1},
+  {ch:2, q:"Lao động trừu tượng là gì?", opts:["Là lao động không xác định được kết quả cụ thể","Là lao động của người sản xuất hàng hóa xét dưới hình thức hao phí sức lực nói chung của con người, không kể đến hình thức cụ thể của nó","Là lao động của những người sản xuất nói chung","Tất cả các phương án đều đúng"], ans:1},
+  {ch:2, q:"Vai trò của lao động cụ thể là gì?", opts:["Nguồn gốc của giá trị","Nguồn gốc của giá trị trao đổi","Nguồn gốc của của cải (giá trị sử dụng)","Tất cả các phương án đều đúng"], ans:2},
+  {ch:2, q:"Tác động của nhân tố nào dưới đây làm thay đổi lượng giá trị của một đơn vị sản phẩm?", opts:["Cường độ lao động","Cường độ lao động và năng suất lao động","Mức độ nặng nhọc của lao động","Năng suất lao động"], ans:3},
+  {ch:2, q:"Giá trị cá biệt của hàng hóa do yếu tố nào quyết định?", opts:["Hao phí lao động cá biệt của người sản xuất quyết định","Hao phí lao động xã hội cần thiết quyết định","Hao phí lao động của ngành quyết định","Hao phí lao động xã hội cần thiết quyết định"], ans:0},
+  {ch:2, q:"Tăng năng suất lao động và tăng cường độ lao động giống nhau ở điểm nào?", opts:["Đều làm giá trị đơn vị hàng hóa giảm","Đều làm tăng lượng lao động hao phí trong 1 đơn vị thời gian","Đều làm tăng số sản phẩm sản xuất ra trong một thời gian","Tất cả các phương án đều đúng"], ans:2},
+  {ch:2, q:"Bản chất của tiền tệ là gì?", opts:["Là thước đo giá trị của hàng hóa","Là phương tiện để lưu thông hàng hóa và để thanh toán","Là hàng hóa đặc biệt đóng vai trò là vật ngang giá chung thống nhất","Là vàng, bạc"], ans:2},
+  {ch:2, q:"Quy luật kinh tế nào có tác dụng điều tiết quan hệ sản xuất và lưu thông hàng hoá; làm thay đổi cơ cấu và quy mô thị trường, ảnh hưởng tới giá cả của hàng hoá?", opts:["Quy luật cạnh tranh","Quy luật giá cả","Quy luật lưu thông tiền tệ","Quy luật cung – cầu"], ans:3},
+  {ch:2, q:"Trong kinh tế thị trường, chủ thể nào có nhiệm vụ khắc phục những khuyết tật của thị trường?", opts:["Nhà nước","Nhà phân phối","Người sản xuất","Người tiêu dùng"], ans:0},
+  {ch:2, q:"Lịch sử phát triển của nền sản xuất xã hội trải qua hai kiểu tổ chức kinh tế nào?", opts:["Sản xuất giá trị thặng dư và sản xuất tự cung tự cấp","Sản xuất tự cung tự cấp và sản xuất hàng hoá","Quá trình trao đổi mua bán và sản xuất hàng hoá","Các phương án trên đều sai"], ans:1},
+  {ch:2, q:"Kinh tế (tự nhiên) tự cung, tự cấp là:", opts:["Sản xuất ra để bán","Tiêu dùng cho chính người sản xuất ra sản phẩm đó","Tiêu dùng cho người thân","Các phương án trên đều đúng"], ans:1},
+  {ch:2, q:"Thế nào là sản xuất hàng hóa?", opts:["Là một kiểu tổ chức kinh tế - xã hội, trong đó những sản phẩm được sản xuất ra để trao đổi, mua bán","Sản xuất và toàn bộ quá trình tái sản xuất đều gắn với thị trường","Kỹ thuật ngày càng phát triển; giao lưu kinh tế, văn hóa ngày càng mở rộng","Tất cả các phương án đều đúng"], ans:0},
+  {ch:2, q:"Phân công lao động xã hội là:", opts:["Là phân công của xã hội về lao động hình thành những ngành, nghề sản xuất khác nhau; là sự chuyên môn hóa nhất định đối với người sản xuất","Là phân công diễn ra trong đơn vị sản xuất","Là sự chuyên môn hóa nhất định đối với người sản xuất","Là sự chia nhỏ quá trình sản xuất, mỗi người chuyên đảm nhận một công đoạn"], ans:0},
+  {ch:2, q:"Trong những nội dung phân công lao động, nội dung nào là cơ sở của sản xuất hàng hóa?", opts:["Phân công chung","Phân công đặc thù","Phân công cá biệt","Phân công chung và phân công đặc thù"], ans:3},
+  {ch:2, q:"Nội dung cuộc đại phân công lao động xã hội lần thứ nhất là:", opts:["Chăn nuôi tách khỏi trồng trọt","Công nghiệp tách khỏi nông nghiệp","Ngành thương nghiệp ra đời","Tiểu thủ công nghiệp tách khỏi nông nghiệp"], ans:0},
+  {ch:2, q:"Nội dung cuộc đại phân công lao động xã hội lần thứ hai là:", opts:["Chăn nuôi tách khỏi trồng trọt","Công nghiệp tách khỏi nông nghiệp","Ngành thương nghiệp ra đời","Tiểu thủ công nghiệp tách khỏi nông nghiệp"], ans:3},
+  {ch:2, q:"Nội dung cuộc đại phân công lao động xã hội lần thứ ba là:", opts:["Chăn nuôi tách khỏi trồng trọt","Công nghiệp tách khỏi nông nghiệp","Ngành thương nghiệp ra đời","Tiểu thủ công nghiệp tách khỏi nông nghiệp"], ans:2},
+  {ch:2, q:"Sản xuất hàng hóa tồn tại:", opts:["Trong mọi xã hội","Trong xã hội nô lệ, phong kiến, chủ nghĩa tư bản","Trong các xã hội có phân công lao động xã hội và sự tách biệt về kinh tế giữa những người sản xuất","Chỉ có trong chủ nghĩa tư bản"], ans:2},
+  {ch:2, q:"Điều kiện ra đời và tồn tại của sản xuất hàng hóa:", opts:["Phân công lao động xã hội và sự tách biệt về kinh tế giữa các chủ thể sản xuất","Phân công lao động trong các gia đình xuất hiện","Chế độ tư hữu về tư liệu sản xuất","Nhu cầu trao đổi trong xã hội tăng lên"], ans:0},
+  {ch:2, q:"Thế nào là tư hữu về tư liệu sản xuất?", opts:["Tư liệu sản xuất thuộc sở hữu riêng của từng người, từng chủ thể sản xuất","Các chủ sở hữu có quyền chi phối, sử dụng tư liệu sản xuất của mình vì lợi ích kinh tế của mình","Các chủ sở hữu tự quyết định những vấn đề lớn: sản xuất cái gì, như thế nào, cho ai","Tất cả các phương án đều đúng"], ans:3},
+  {ch:2, q:"Đặc trưng và ưu thế của sản xuất hàng hóa:", opts:["Có phân công lao động xã hội, nên có chuyên hóa, hiệp tác hóa, phát huy lợi thế so sánh của các vùng","Mở rộng quan hệ trao đổi trong nước và quốc tế, thúc đẩy lực lượng sản xuất phát triển","Có sự hoạt động của quy luật giá trị nên tiết kiệm lao động sống, lao động quá khứ, tăng năng suất lao động, tăng chất lượng sản phẩm","Tất cả các phương án đều đúng"], ans:3},
+  {ch:2, q:"Hàng hóa là:", opts:["Sản phẩm của lao động để thỏa mãn nhu cầu của con người","Sản phẩm của lao động có thể thỏa mãn nhu cầu nào đó của con người thông qua mua bán, trao đổi","Sản phẩm trên thị trường","Sản phẩm sản xuất ra để đem trao đổi, mua bán"], ans:1},
+  {ch:2, q:"Dấu hiệu quan trọng nhất của hàng hóa:", opts:["Sản xuất trước khi đem bán","Trước khi đi vào tiêu dùng phải qua mua bán","Muốn bán được phải có giá trị","Muốn bán được phải có giá trị sử dụng"], ans:1},
+  {ch:2, q:"Hàng hóa được phân thành:", opts:["Hàng hóa hữu hình","Hàng hóa hữu hình và vô hình","Hàng hóa vô hình","Hàng hóa hữu hình và bán hữu hình"], ans:1},
+  {ch:2, q:"Lượng giá trị sử dụng của sản phẩm nhiều hay ít phụ thuộc vào các nhân tố nào?", opts:["Phân công lao động xã hội","Trình độ kỹ thuật và công nghệ sản xuất","Kỹ năng của người lao động","Tất cả các phương án đều đúng"], ans:3},
+  {ch:2, q:"Quan hệ tỷ lệ về lượng trong trao đổi giữa các hàng hóa với nhau do cái gì quy định?", opts:["Do tính hữu ích của hàng hóa","Do giá trị nội tại của hàng hóa","Do quan hệ cung – cầu","Do ngẫu nhiên"], ans:1},
+  {ch:2, q:"Cơ sở chung của quan hệ trao đổi giữa các hàng hóa là gì?", opts:["Là công dụng của hàng hóa","Là hao phí lao động kết tinh trong hàng hóa","Là sở thích của người tiêu dùng","Là sự khan hiếm của hàng hóa"], ans:1},
+  {ch:2, q:"Trong các yếu tố sau đây, yếu tố nào là nguồn gốc của giá trị hàng hóa?", opts:["Nhà xưởng, máy móc","Lao động của con người","Đất đai","Kỹ thuật, công nghệ sản xuất"], ans:1},
+  {ch:2, q:"Giá trị hàng hóa được tạo ra từ đâu?", opts:["Từ sản xuất","Từ lưu thông","Cả sản xuất và lưu thông","Từ những kết quả phát minh"], ans:0},
+  {ch:2, q:"Vì sao hàng hoá có hai thuộc tính là giá trị và giá trị sử dụng?", opts:["Vì lao động sản xuất hàng hoá có tính chất hai mặt","Vì có hai loại lao động là lao động trừu tượng và lao động cụ thể","Vì hàng hoá được đem ra trao đổi trên thị trường","Vì hàng hoá là sản phẩm lao động của con người"], ans:0},
+  {ch:2, q:"Lao động cụ thể là nguồn gốc của cái gì?", opts:["Nguồn gốc của của cải","Nguồn gốc của giá trị","Nguồn gốc của giá trị sử dụng","Nguồn gốc của của cải và giá trị sử dụng"], ans:3},
+  {ch:2, q:"Lao động trừu tượng tạo ra cái gì?", opts:["Tính hữu ích của sản phẩm hàng hóa","Giá trị của hàng hóa","Tạo ra cả tính hữu ích và giá trị hàng hóa","Tất cả các phương án đều đúng"], ans:1},
+  {ch:2, q:"Mâu thuẫn cơ bản của nền sản xuất hàng hóa là gì? (câu 1)", opts:["Là mâu thuẫn giữa lao động tư nhân và lao động xã hội","Là mâu thuẫn giữa lao động cụ thể và lao động trừu tượng","Là mâu thuẫn giữa giá trị và giá trị sử dụng","Là mâu thuẫn giữa giá trị và giá cả của hàng hóa"], ans:0},
+  {ch:2, q:"Giá trị sử dụng của hàng hóa mang lại tính hữu ích cho:", opts:["Người sản xuất ra nó","Người mua","Cả người sản xuất và người mua","Tất cả các phương án đều đúng"], ans:1},
+  {ch:2, q:"Xét ở tính chất thì giá trị sử dụng của hàng hóa là:", opts:["Phạm trù lịch sử","Phạm trù kinh tế chính trị","Phạm trù vĩnh viễn","Phạm trù xã hội"], ans:2},
+  {ch:2, q:"Mâu thuẫn cơ bản của nền sản xuất hàng hóa (câu 2):", opts:["Mâu thuẫn giữa hàng và tiền","Mâu thuẫn giữa giá trị và giá trị sử dụng","Mâu thuẫn giữa lao động tư nhân với lao động xã hội","Mâu thuẫn giữa sản xuất với tiêu dùng"], ans:2},
+  {ch:2, q:"Trao đổi giữa 2 hàng hóa với nhau thực chất là trao đổi:", opts:["Trao đổi lao động","Trao đổi sức lao động","Trao đổi ngang giá","Trao đổi giá trị sử dụng"], ans:2},
+  {ch:2, q:"Lao động cụ thể là:", opts:["Lao động có ích dưới một hình thức cụ thể của một nghề nhất định","Lao động giống nhau giữa các loại lao động","Lao động giản đơn","Lao động chân tay"], ans:0},
+  {ch:2, q:"Lao động trừu tượng là:", opts:["Sự hao phí sinh lực thần kinh cơ bắp của con người nói chung không kể các hình thức cụ thể của nó","Lao động thành thạo","Lao động có trình độ cao","Lao động trí óc"], ans:0},
+  {ch:2, q:"Thế nào là lao động giản đơn?", opts:["Làm công việc giản đơn","Làm ra hàng hóa chất lượng thấp","Không cần qua đào tạo vẫn làm được","Làm một công đoạn tạo ra hàng hóa"], ans:2},
+  {ch:2, q:"Lao động phức tạp là:", opts:["Lao động tạo ra sản phẩm chất lượng cao","Có nhiều thao tác phức tạp","Qua đào tạo, huấn luyện mới làm được","Lao động trí óc"], ans:2},
+  {ch:2, q:"Cặp phạm trù nào là phát hiện riêng của C. Mác?", opts:["Lao động giản đơn và lao động phức tạp","Lao động cụ thể và lao động trừu tượng","Lao động tư nhân và lao động xã hội","Lao động quá khứ và lao động sống"], ans:1},
+  {ch:2, q:"Đơn vị đo lượng giá trị là:", opts:["Thời gian lao động xã hội cần thiết","Thời gian lao động: ngày, giờ, tháng","Thời gian của từng người để làm ra hàng hóa của họ","Tất cả các phương án đều đúng"], ans:0},
+  {ch:2, q:"Lượng giá trị hàng hoá được đo bằng:", opts:["Thời gian lao động của những người cung cấp đại bộ phận lượng hàng hóa trên thị trường","Thời gian lao động từng ngành sản xuất lượng hàng hóa trên thị trường","Thời gian lao động của từng người để làm ra hàng hóa của họ","Tất cả các phương án đều đúng"], ans:0},
+  {ch:2, q:"Lượng giá trị của đơn vị hàng hóa:", opts:["Tỉ lệ thuận với năng suất lao động, tỉ lệ nghịch với thời gian lao động cần thiết","Tỉ lệ nghịch với năng suất lao động và thời gian lao động xã hội cần thiết","Tỉ lệ thuận với số lượng lao động kết tinh, tỉ lệ nghịch với năng suất lao động xã hội","Tỉ lệ thuận với hao phí vật tư kỹ thuật, tỉ lệ nghịch với thời gian lao động xã hội cần thiết"], ans:2},
+  {ch:2, q:"Giá trị của hàng hoá gồm những bộ phận nào?", opts:["c + v + m","c + v","v + m","c + c + m"], ans:0},
+  {ch:2, q:"Cường độ lao động là:", opts:["Độ khẩn trương nặng nhọc trong lao động","Hiệu quả của lao động","Hiệu suất của lao động","Tất cả các phương án đều đúng"], ans:0},
+  {ch:2, q:"Khi tăng cường độ lao động, số lượng lao động hao phí trong một đơn vị thời gian sẽ:", opts:["Tăng lên","Giảm","Không đổi","Tất cả các phương án đều đúng"], ans:0},
+  {ch:2, q:"Khi tăng cường độ lao động, giá trị của 1 đơn vị sản phẩm sẽ:", opts:["Không đổi","Tăng","Giảm","Tất cả các phương án đều đúng"], ans:0},
+  {ch:2, q:"Năng suất lao động là:", opts:["Hiệu quả, hay hiệu suất của lao động","Sự hao phí lao động trong một đơn vị thời gian","Giống như kéo dài thời gian lao động","Tất cả các phương án đều đúng"], ans:0},
+  {ch:2, q:"Khi năng suất lao động tăng lên, giá trị 1 đơn vị sản phẩm sẽ:", opts:["Không đổi","Tăng","Giảm","Tất cả các phương án đều đúng"], ans:2},
+  {ch:2, q:"Khi năng suất lao động tăng, giá trị tạo ra với một đơn vị thời gian sẽ:", opts:["Không đổi","Tăng","Giảm","Giá trị tạo ra trong một đơn vị sản phẩm không đổi"], ans:0},
+  {ch:2, q:"Khi năng suất lao động tăng – trường hợp nào dưới đây KHÔNG đúng?", opts:["Số lượng hàng hoá làm ra trong một đơn vị thời gian tăng lên","Tổng giá trị hàng hoá cũng tăng","Tổng giá trị hàng hoá không đổi","Giá trị một đơn vị hàng hoá giảm"], ans:1},
+  {ch:2, q:"Những nhân tố ảnh hưởng đến mức năng suất lao động?", opts:["Trình độ kỹ thuật và công nghệ sản xuất","Trình độ tay nghề của người lao động","Những điều kiện tự nhiên – xã hội của sản xuất","Tất cả các phương án đều đúng"], ans:3},
+  {ch:2, q:"Phương hướng cơ bản và lâu dài để tăng sản phẩm cho xã hội:", opts:["Tăng năng suất lao động xã hội","Tăng cường độ lao động","Kéo dài thời gian lao động","Mở rộng quy mô sản xuất và nâng cao trình độ khoa học công nghệ"], ans:0},
+  {ch:2, q:"Bản chất của tiền tệ là gì? (câu 2)", opts:["Là hàng hoá đặc biệt, làm vật ngang giá chung cho các hàng hoá khác","Thể hiện lao động xã hội kết tinh trong hàng hoá","Phản ánh quan hệ kinh tế giữa những người sản xuất hàng hoá với nhau","Tất cả các phương án đều đúng"], ans:3},
+  {ch:2, q:"Những chức năng nào của tiền tệ đòi hỏi phải có tiền vàng?", opts:["Chỉ có chức năng thước đo giá trị","Tất cả đều đúng","Chức năng thước đo giá trị, cất trữ","Chức năng thước đo giá trị, cất trữ, tiền tệ thế giới"], ans:3},
+  {ch:2, q:"Chức năng của tiền tệ:", opts:["Phương tiện lưu thông, thước đo giá trị","Phương tiện thanh toán, cất trữ","Phương tiện trao đổi quốc tế","Tất cả các phương án đều đúng"], ans:3},
+  {ch:2, q:"Vì sao vàng, bạc có thể đóng vai trò là tiền tệ?", opts:["Chúng là những kim loại quý, thuần nhất về chất","Chúng dễ chia nhỏ, dễ dát mỏng, dễ kéo sợi, với một khối lượng nhỏ có giá trị lớn","Chúng ít hao mòn, khó hư hỏng, rất thuận tiện cho quá trình trao đổi","Tất cả các phương án đều đúng"], ans:3},
+  {ch:2, q:"Thời gian lao động xã hội cần thiết – điền vào chỗ trống: \"...với ___ bình thường của xã hội, tức là với trình độ ___ trung bình, trình độ ___ trung bình và cường độ ___ trung bình...\"", opts:["điều kiện – kỹ thuật – khéo léo – lao động","điều kiện – khéo léo – kỹ thuật – lao động","điều kiện – lao động – khéo léo – kỹ thuật","kỹ thuật – khéo léo – điều kiện – lao động"], ans:0},
+  {ch:2, q:"Quy luật kinh tế cơ bản của sản xuất hàng hoá là quy luật nào?", opts:["Quy luật cung - cầu","Quy luật cạnh tranh","Quy luật giá trị","Quy luật sản xuất giá trị thặng dư"], ans:2},
+  {ch:2, q:"Quy luật giá trị là:", opts:["Quy luật kinh tế cơ bản của kinh tế hàng hóa","Quy luật kinh tế cơ bản của chủ nghĩa tư bản","Quy luật chung của mọi hình thái kinh tế xã hội","Tất cả các phương án đều đúng"], ans:0},
+  {ch:2, q:"Nội dung (yêu cầu) của quy luật giá trị:", opts:["Sản xuất, trao đổi tiến hành trên cơ sở hao phí lao động xã hội cần thiết","Giá cả bằng giá trị của hàng hóa","Giá cả lên xuống xoay quanh giá trị","Giá cả hình thành tự phát trên thị trường"], ans:0},
+  {ch:2, q:"Tác dụng của quy luật giá trị:", opts:["Điều tiết sản xuất, lưu thông hàng hóa","Kích thích cải tiến công nghệ","Phân hóa những người sản xuất thành người giàu, người nghèo","Tất cả các phương án đều đúng"], ans:3},
+  {ch:2, q:"Sự tác động của cung và cầu làm cho:", opts:["Giá cả vận động xoay quanh giá trị","Giá cả bằng giá trị","Giá cả lớn hơn giá trị","Giá cả nhỏ hơn giá trị"], ans:0},
+  {ch:2, q:"Giá cả bằng giá trị khi:", opts:["Cung bằng cầu","Cung nhỏ hơn cầu","Cung lớn hơn cầu","Cung bằng không"], ans:0},
+  {ch:2, q:"Quan hệ giữa giá cả và giá trị – chọn câu đúng:", opts:["Giá trị là cơ sở của giá cả, là yếu tố quyết định giá cả","Giá cả là hình thức biểu hiện bằng tiền của giá trị","Giá cả thị trường còn chịu ảnh hưởng của cung – cầu, giá trị của tiền","Tất cả các phương án đều đúng"], ans:3},
+  {ch:2, q:"Cơ sở tồn tại của quy luật giá trị là:", opts:["Nền sản xuất tư bản chủ nghĩa","Nền sản xuất của cải vật chất nói chung","Nền kinh tế hàng hóa","Tất cả các phương án đều đúng"], ans:2},
+  {ch:2, q:"Biểu hiện hoạt động của quy luật giá trị:", opts:["Giá cả thị trường xoay quanh giá trị xã hội của hàng hóa","Giá cả thị trường xoay quanh giá cả sản xuất","Giá cả thị trường xoay quanh giá cả độc quyền","Tất cả các phương án đều đúng"], ans:0},
+  {ch:2, q:"Mục đích cuối cùng của chủ sản xuất hàng hoá là:", opts:["Đáp ứng nhu cầu thị trường","Cải thiện mức sống","Lợi nhuận tối đa","Phát triển văn hóa"], ans:2},
+  {ch:2, q:"Tỷ lệ lao động phức tạp và lao động giản đơn tăng lên có ảnh hưởng như thế nào đến lượng giá trị được tạo ra trong một đơn vị thời gian?", opts:["Tăng lên","Giữ nguyên không đổi","Giảm xuống","Tăng lên nhưng phải gắn liền với tiến bộ công nghệ"], ans:0},
+  {ch:2, q:"Các nhân tố ảnh hưởng đến năng suất lao động:", opts:["Trình độ kỹ thuật và công nghệ sản xuất","Trình độ tay nghề của người lao động","Những điều kiện tự nhiên – xã hội của sản xuất","Tất cả các phương án đều đúng"], ans:3},
+  {ch:2, q:"Trường hợp nào không đáp ứng yêu cầu của quy luật giá trị?", opts:["Hao phí lao động cá biệt > hao phí lao động xã hội cần thiết","Hao phí lao động cá biệt < hao phí lao động xã hội cần thiết","Hao phí lao động cá biệt = hao phí lao động xã hội cần thiết","Tất cả các phương án đều đúng"], ans:0},
+  {ch:2, q:"Điểm giống nhau giữa tăng năng suất lao động và tăng cường độ lao động:", opts:["Đều làm tăng thêm lượng sản phẩm được sản xuất ra trong một đơn vị thời gian","Đều làm giảm giá trị của một đơn vị hàng hóa","Đều làm tăng lượng lao động hao phí trong một đơn vị thời gian","Đều gắn với tiến bộ kỹ thuật – công nghệ"], ans:0},
+  {ch:2, q:"Trong các yếu tố sau đây, yếu tố nào được xác định là thực thể giá trị hàng hóa?", opts:["Lao động cụ thể","Lao động trừu tượng","Lao động phức tạp","Lao động giản đơn"], ans:1},
+
+  // ── CHƯƠNG 3 ──
+  {ch:3, q:"T – H – T' là:", opts:["Công thức tuần hoàn tư bản","Công thức chu chuyển tư bản","Công thức chung của tư bản","Công thức vận động của CNTB độc quyền"], ans:2},
+  {ch:3, q:"Giá trị hàng hóa sức lao động gồm:", opts:["Giá trị các tư liệu tiêu dùng để tái sản xuất sức lao động của công nhân và nuôi gia đình của họ","Chi phí để thỏa mãn nhu cầu về văn hóa, tinh thần","Chi phí đào tạo người lao động","Tất cả các phương án đều đúng"], ans:3},
+  {ch:3, q:"Sức lao động là hàng hoá khi:", opts:["Tự do về thân thể và không có tư liệu sản xuất","Có quyền sở hữu năng lực lao động của mình","Có quyền bán sức lao động của mình cho người khác","Muốn lao động để có thu nhập"], ans:0},
+  {ch:3, q:"Giá trị sử dụng của hàng hoá sức lao động là:", opts:["Thỏa mãn nhu cầu của người mua nó","Công dụng của hàng hoá sức lao động","Tính có ích của hàng hoá sức lao động","Tất cả các phương án đều đúng"], ans:3},
+  {ch:3, q:"Khối lượng giá trị thặng dư (M) phản ánh:", opts:["Trình độ bóc lột của tư bản đối với lao động làm thuê","Tính chất bóc lột của tư bản đối với lao động làm thuê","Phạm vi bóc lột của tư bản đối với lao động","Quy mô bóc lột của tư bản đối với lao động làm thuê"], ans:3},
+  {ch:3, q:"Tư bản là:", opts:["Tiền và máy móc thiết bị","Tiền có khả năng lại tăng lên","Giá trị dôi ra ngoài sức lao động","Giá trị mang lại giá trị thặng dư bằng cách bóc lột công nhân làm thuê"], ans:3},
+  {ch:3, q:"Phần giá trị dôi ra ngoài giá trị hàng hoá sức lao động trong nền sản xuất tư bản chủ nghĩa được gọi là gì?", opts:["Lợi nhuận","Chi phí sản xuất","Chi phí lưu thông","Giá trị thặng dư"], ans:3},
+  {ch:3, q:"Nền kinh tế tri thức được xem là:", opts:["Một phương thức sản xuất mới","Một hình thái kinh tế - xã hội mới","Một giai đoạn mới của CNTB hiện đại","Một nấc thang phát triển của lực lượng sản xuất"], ans:3},
+  {ch:3, q:"Tư bản bất biến (c) là:", opts:["Giá trị của nó chuyển dần vào sản phẩm qua khấu hao","Giá trị của nó lớn lên trong quá trình sản xuất","Giá trị của nó không thay đổi về lượng và được chuyển nguyên vẹn vào sản phẩm","Giá trị của nó không thay đổi và được chuyển ngay sang sản phẩm sau một chu kỳ sản xuất"], ans:2},
+  {ch:3, q:"Tư bản bất biến (c) và tư bản khả biến (v) có vai trò như thế nào trong quá trình sản xuất giá trị thặng dư?", opts:["Tư bản bất biến là điều kiện để sản xuất giá trị thặng dư","Tư bản khả biến là nguồn gốc của giá trị thặng dư","Cả c và v có vai trò như nhau trong quá trình tạo ra giá trị thặng dư","Tư bản bất biến là điều kiện để sản xuất giá trị thặng dư, tư bản khả biến là nguồn gốc của giá trị thặng dư"], ans:3},
+  {ch:3, q:"Nhận xét nào dưới đây KHÔNG đúng về tiền công TBCN?", opts:["Tiền công là giá trị của lao động","Là số tiền nhà tư bản trả cho công nhân làm thuê","Là giá cả sức lao động","Tất cả các phương án đều đúng"], ans:0},
+  {ch:3, q:"Đặc điểm nào dưới đây thuộc phạm trù giá trị thặng dư tuyệt đối?", opts:["Kéo dài ngày lao động còn thời gian lao động cần thiết không đổi","Sử dụng kỹ thuật tiên tiến, cải tiến tổ chức quản lý","Tăng năng suất lao động","Tất cả các phương án đều đúng"], ans:0},
+  {ch:3, q:"Tốc độ chu chuyển của tư bản tăng lên thì tỉ suất lợi nhuận sẽ:", opts:["Tăng lên","Không đổi","Giảm xuống","Tùy điều kiện cụ thể"], ans:0},
+  {ch:3, q:"Nếu m = 6, v = 2 thì m' bằng bao nhiêu?", opts:["200%","250%","300%","350%"], ans:2},
+  {ch:3, q:"Quy luật kinh tế cơ bản của CNTB là:", opts:["Quy luật giá trị","Quy luật giá trị thặng dư","Quy luật lợi nhuận độc quyền","Quy luật cạnh tranh"], ans:1},
+  {ch:3, q:"Tích tụ tư bản là:", opts:["Sự tăng quy mô của tư bản cá biệt bằng cách mở rộng sản xuất","Quá trình tăng quy mô của tư bản cá biệt bằng cách tư bản hóa một phần giá trị thặng dư","Sự tăng quy mô tư bản cá biệt bằng cách kết hợp nhiều tư bản nhỏ","Sự tăng quy mô tư bản cá biệt bằng cách liên doanh liên kết"], ans:1},
+];
+
+let mode = '', questions = [], current = 0, score = 0, userAnswers = [];
+
+function shuffle(arr) {
+  return [...arr].sort(() => Math.random() - 0.5);
+}
+
+function startQuiz(m) {
+  mode = m;
+  if (m === 'ch1') questions = shuffle(ALL_QUESTIONS.filter(q => q.ch === 1));
+  else if (m === 'ch2') questions = shuffle(ALL_QUESTIONS.filter(q => q.ch === 2));
+  else if (m === 'ch3') questions = shuffle(ALL_QUESTIONS.filter(q => q.ch === 3));
+  else questions = shuffle(ALL_QUESTIONS);
+
+  current = 0; score = 0; userAnswers = [];
+  show('quiz-screen');
+  document.getElementById('progress-wrap').style.display = 'flex';
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = questions[current];
+  const keys = ['A','B','C','D'];
+  const badge = document.getElementById('chap-badge');
+  badge.textContent = `Chương ${q.ch}`;
+  badge.className = `chap-badge badge-ch${q.ch}`;
+  document.getElementById('q-counter').textContent = `${current + 1} / ${questions.length}`;
+  document.getElementById('question-text').textContent = q.q;
+
+  const list = document.getElementById('options-list');
+  list.innerHTML = '';
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.innerHTML = `<span class="option-key">${keys[i]}</span><span>${opt}</span>`;
+    btn.onclick = () => selectAnswer(i);
+    list.appendChild(btn);
+  });
+
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback';
+  document.getElementById('next-btn').disabled = true;
+  document.getElementById('next-btn').textContent = current === questions.length - 1 ? 'Xem kết quả →' : 'Câu tiếp theo →';
+
+  // progress
+  const pct = (current / questions.length) * 100;
+  document.getElementById('progress-bar').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = `${current}/${questions.length}`;
+  document.getElementById('score-display').textContent = `✓ ${score}`;
+}
+
+function selectAnswer(idx) {
+  const q = questions[current];
+  const btns = document.querySelectorAll('.option-btn');
+  btns.forEach(b => b.disabled = true);
+
+  const isCorrect = idx === q.ans;
+  btns[idx].classList.add(isCorrect ? 'correct' : 'wrong');
+  if (!isCorrect) btns[q.ans].classList.add('correct');
+
+  if (isCorrect) score++;
+  userAnswers.push({ q, chosen: idx, correct: q.ans });
+
+  const fb = document.getElementById('feedback');
+  const icon = document.getElementById('fb-icon');
+  const text = document.getElementById('fb-text');
+  if (isCorrect) {
+    fb.className = 'feedback show correct';
+    icon.textContent = '✓';
+    text.textContent = 'Chính xác!';
+  } else {
+    fb.className = 'feedback show wrong';
+    icon.textContent = '✗';
+    text.textContent = `Sai rồi! Đáp án đúng là: ${['A','B','C','D'][q.ans]}. ${q.opts[q.ans]}`;
+  }
+
+  document.getElementById('next-btn').disabled = false;
+}
+
+function nextQuestion() {
+  current++;
+  if (current >= questions.length) {
+    showResult();
+  } else {
+    renderQuestion();
+  }
+}
+
+function showResult() {
+  show('result-screen');
+  document.getElementById('progress-wrap').style.display = 'none';
+  document.getElementById('score-display').textContent = '';
+  const total = questions.length;
+  const pct = Math.round((score / total) * 100);
+
+  document.getElementById('result-pct').textContent = pct + '%';
+  document.getElementById('stat-correct').textContent = score;
+  document.getElementById('stat-wrong').textContent = total - score;
+  document.getElementById('stat-total').textContent = total;
+
+  const circle = document.getElementById('result-circle');
+  circle.style.background = `conic-gradient(var(--accent2) ${pct * 3.6}deg, var(--border) 0deg)`;
+
+  let title, sub;
+  if (pct >= 90) { title = 'Xuất sắc! 🎉'; sub = 'Bạn nắm vững kiến thức rất tốt!'; }
+  else if (pct >= 70) { title = 'Khá tốt! 👍'; sub = 'Tiếp tục ôn luyện để hoàn thiện hơn.'; }
+  else if (pct >= 50) { title = 'Cố lên! 📚'; sub = 'Ôn lại những phần còn yếu nhé.'; }
+  else { title = 'Cần ôn thêm! 💪'; sub = 'Hãy xem lại đáp án và học kỹ hơn.'; }
+
+  document.getElementById('result-title').textContent = title;
+  document.getElementById('result-sub').textContent = sub;
+}
+
+function showReview() {
+  show('review-screen');
+  const list = document.getElementById('review-list');
+  const keys = ['A','B','C','D'];
+  list.innerHTML = userAnswers.map((ua, i) => {
+    const isRight = ua.chosen === ua.correct;
+    return `<div class="review-item ${isRight ? 'review-correct' : 'review-wrong'}">
+      <div class="review-q"><strong>${i+1}.</strong> ${ua.q.q}</div>
+      <div class="review-options">
+        ${ua.q.opts.map((opt, oi) => {
+          let cls = '';
+          if (oi === ua.correct) cls = 'is-correct';
+          else if (oi === ua.chosen && !isRight) cls = 'is-wrong-pick';
+          return `<div class="review-option ${cls}">${keys[oi]}. ${opt}</div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function goHome() {
+  show('home-screen');
+  document.getElementById('progress-wrap').style.display = 'none';
+  document.getElementById('score-display').textContent = '';
+}
+
+function show(id) {
+  ['home-screen','quiz-screen','result-screen','review-screen'].forEach(s => {
+    document.getElementById(s).style.display = s === id ? (id === 'quiz-screen' ? 'block' : id === 'home-screen' ? 'flex' : 'block') : 'none';
+  });
+}
+</script>
+</body>
+</html>
